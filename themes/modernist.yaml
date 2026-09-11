@@ -14,8 +14,10 @@
 
 Modernist:
   # Shared across both modes: shape and type only, no colour.
+  # No card border/shadow — matches the source design system's .card: flat,
+  # square, separated from the page purely by the surface/bg colour contrast.
   ha-card-border-radius: "0px"
-  ha-card-border-width: "2px"
+  ha-card-border-width: "0px"
   ha-card-box-shadow: "none"
   mdc-shape-small: "0px"
   mdc-shape-medium: "0px"
@@ -39,12 +41,13 @@ Modernist:
   card-mod-card: |
     ha-card {
       border-radius: 0 !important;
-      border: 2px solid var(--divider-color) !important;
+      border: none !important;
       box-shadow: none !important;
     }
+    /* Section heading cards keep a rule underneath, like the design
+       system's .nav / .table border-bottom — not a box. */
     ha-card.type-heading,
     ha-card:has(> hui-heading-card) {
-      border: none !important;
       border-bottom: 2px solid var(--divider-color) !important;
     }
   card-mod-row: |
@@ -65,9 +68,10 @@ Modernist:
 
       primary-background-color: "#f3f2f2"
       secondary-background-color: "#f3f2f2"
-      card-background-color: "#f3f2f2"
-      ha-card-background: "#f3f2f2"
-      ha-card-border-color: "#201e1d"
+      # Surface color from the design system (--color-surface) — this is what
+      # separates a card from the page now that there's no border.
+      card-background-color: "#eae9e9"
+      ha-card-background: "#eae9e9"
       divider-color: "#201e1d"
 
       primary-text-color: "#201e1d"
@@ -117,7 +121,6 @@ Modernist:
       secondary-background-color: "#161514"
       card-background-color: "#1c1b1a"
       ha-card-background: "#1c1b1a"
-      ha-card-border-color: "#3a3836"
       divider-color: "#3a3836"
 
       primary-text-color: "#f3f2f2"
