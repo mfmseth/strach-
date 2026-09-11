@@ -1,0 +1,84 @@
+# Modernist view — 1:1 port of Home Dashboard.dc.html
+#
+# This is a second VIEW appended to the "home-overview-v2" storage-mode dashboard
+# (applied live via the HA API, not hand-pasted). Kept here for reference/rollback.
+# The "Home" view (home_overview_dashboard.v2.yaml) is untouched and still the
+# default landing view — this is additive.
+#
+# Requires the modernist-home-card.js dashboard resource (registered as an inline
+# module resource via the HA API, source also in this repo).
+
+- title: Modernist
+  path: modernist
+  type: panel
+  icon: mdi:view-dashboard-variant
+  cards:
+    - type: custom:modernist-home-card
+      person: person.vanden
+      halley: input_boolean.halley
+      weather: weather.forecast_home
+      dark_mode_helper: input_boolean.dark_mode
+      backup_state: sensor.backup_backup_manager_state
+      backup_last: sensor.backup_last_successful_automatic_backup
+      occupancy:
+        - entity: binary_sensor.upstairs_occupancy_group
+          name: Upstairs
+        - entity: binary_sensor.bedroom_occupancy
+          name: Bedroom
+        - entity: binary_sensor.upstairs_bathroom_fp2_occupancy
+          name: Bathroom
+        - entity: binary_sensor.downstairs_occupancy_group
+          name: Downstairs
+      lights_up:
+        - entity: light.kitchen_ceiling_lights
+          name: Kitchen
+        - entity: light.entryway_ceiling_lights
+          name: Entryway
+        - entity: light.bedroom_3
+          name: Bedroom
+        - entity: light.upstairs_bathroom
+          name: Bathroom
+      lights_down:
+        - entity: light.living_room
+          name: Living room
+        - entity: light.office
+          name: Office
+        - entity: light.stairs_main_lights_2
+          name: Stairs
+        - entity: light.downstairs
+          name: All downstairs
+      fans:
+        - entity: fan.living_room_fan
+          name: Ceiling fan
+          room: Living room
+        - entity: fan.air_circulator_2
+          name: Air circulator
+          room: Living room
+        - entity: fan.office_fan
+          name: Ceiling fan
+          room: Office
+        - entity: fan.tower_fan
+          name: Tower fan
+          room: Office
+        - entity: fan.air_circulator
+          name: Air circulator
+          room: Bedroom
+        - entity: fan.standing_fan_5c
+          name: Standing fan
+          room: Entryway
+      climate:
+        - entity: climate.upstairs
+          name: Upstairs
+        - entity: climate.bedroom
+          name: Bedroom
+        - entity: climate.downstairs
+          name: Downstairs
+      vacuums:
+        - entity: vacuum.saros_10r
+          name: Saros 10R
+          room: Upstairs
+          last_run_helper: input_datetime.saros_last_run
+        - entity: vacuum.roborock_qrevo_s5v
+          name: Roborock Qrevo
+          room: Downstairs
+          last_run_helper: input_datetime.roborock_last_run
