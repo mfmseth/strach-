@@ -32,11 +32,6 @@ Modernist:
   paper-font-headline_-_font-family: "Archivo, Helvetica Neue, Arial, sans-serif"
   paper-font-title_-_font-family: "Archivo, Helvetica Neue, Arial, sans-serif"
 
-  # Flat bar sliders on tile features — same in both modes.
-  feature-height: "20px"
-  feature-border-radius: "0px"
-  tile-card-feature-border-radius: "0px"
-
   card-mod-theme: Modernist
   card-mod-card: |
     ha-card {
@@ -49,6 +44,15 @@ Modernist:
     ha-card.type-heading,
     ha-card:has(> hui-heading-card) {
       border-bottom: 2px solid var(--divider-color) !important;
+    }
+    /* Tile feature sliders/switches (light-brightness, fan-speed, ...):
+       hui-card-features hard-codes --feature-height: 42px and
+       --feature-border-radius on its own :host, which silently overrides
+       a plain theme-variable value of the same name — has to be forced
+       here instead, on the element itself. */
+    hui-card-features {
+      --feature-height: 20px !important;
+      --feature-border-radius: 0px !important;
     }
   card-mod-row: |
     :host { --mdc-shape-small: 0px; }
