@@ -1,4 +1,4 @@
-# Modernist theme for Home Assistant
+# Modernist theme for Home Assistant — light + dark
 #
 # Install:
 #   1. Put this file at  <config>/themes/modernist.yaml
@@ -7,32 +7,15 @@
 #            themes: !include_dir_merge_named themes
 #   3. Restart HA (or Developer Tools > YAML > Reload Themes)
 #   4. Profile (click your name, bottom left) > Theme > Modernist
+#      Then use the Light / Dark / Auto buttons right under the theme picker.
+#      "Auto" follows your OS setting.
 #
 # Requires card-mod (HACS) for the zero-radius + flat slider rules.
-# You already have it.
 
 Modernist:
-  # ── Palette ───────────────────────────────────────────────────────────────
-  primary-color: "#ec3013"
-  accent-color: "#ec3013"
-  dark-primary-color: "#ae1800"
-  light-primary-color: "#f8a894"
-
-  primary-background-color: "#f3f2f2"
-  secondary-background-color: "#f3f2f2"
-  card-background-color: "#f3f2f2"
-  ha-card-background: "#f3f2f2"
-  divider-color: "#201e1d"
-
-  primary-text-color: "#201e1d"
-  secondary-text-color: "#6b6764"
-  text-primary-color: "#ffffff"
-  disabled-text-color: "#a8a3a0"
-
-  # ── Flat, square, ruled ───────────────────────────────────────────────────
+  # Shared across both modes: shape and type only, no colour.
   ha-card-border-radius: "0px"
   ha-card-border-width: "2px"
-  ha-card-border-color: "#201e1d"
   ha-card-box-shadow: "none"
   mdc-shape-small: "0px"
   mdc-shape-medium: "0px"
@@ -41,73 +24,134 @@ Modernist:
   ha-chip-border-radius: "0px"
   ha-badge-border-radius: "0px"
 
-  # ── Type ──────────────────────────────────────────────────────────────────
   primary-font-family: "Archivo, Helvetica Neue, Arial, sans-serif"
   paper-font-common-base_-_font-family: "Archivo, Helvetica Neue, Arial, sans-serif"
   paper-font-body1_-_font-family: "Archivo, Helvetica Neue, Arial, sans-serif"
   paper-font-headline_-_font-family: "Archivo, Helvetica Neue, Arial, sans-serif"
   paper-font-title_-_font-family: "Archivo, Helvetica Neue, Arial, sans-serif"
 
-  # ── Header / sidebar ──────────────────────────────────────────────────────
-  app-header-background-color: "#f3f2f2"
-  app-header-text-color: "#201e1d"
-  app-header-border-bottom: "2px solid #201e1d"
-  sidebar-background-color: "#f3f2f2"
-  sidebar-text-color: "#201e1d"
-  sidebar-icon-color: "#6b6764"
-  sidebar-selected-text-color: "#ec3013"
-  sidebar-selected-icon-color: "#ec3013"
-
-  # ── State colors: one accent, everything else ink ─────────────────────────
-  state-icon-color: "#6b6764"
-  state-icon-active-color: "#ec3013"
-  state-light-active-color: "#ec3013"
-  state-fan-active-color: "#ec3013"
-  state-climate-cool-color: "#ec3013"
-  state-climate-heat-color: "#ec3013"
-  state-climate-auto-color: "#ec3013"
-  state-switch-active-color: "#ec3013"
-  state-binary_sensor-active-color: "#ec3013"
-  state-vacuum-active-color: "#ec3013"
-  state-person-home-color: "#ec3013"
-  state-person-not_home-color: "#6b6764"
-  paper-item-icon-active-color: "#ec3013"
-  paper-item-icon-color: "#6b6764"
-
-  # ── Tile feature sliders: flat bars, square, no rounding ──────────────────
-  # This is what makes the brightness/speed sliders read like the design.
+  # Flat bar sliders on tile features — same in both modes.
   feature-height: "20px"
   feature-border-radius: "0px"
   tile-card-feature-border-radius: "0px"
-  slider-color: "#ec3013"
-  slider-secondary-color: "#d4d1cf"
-  slider-track-color: "#d4d1cf"
-  slider-bar-color: "#ec3013"
 
-  switch-checked-color: "#ec3013"
-  switch-checked-button-color: "#ec3013"
-  switch-unchecked-color: "#6b6764"
-
-  # ── card-mod: the parts theme variables cannot reach ──────────────────────
   card-mod-theme: Modernist
   card-mod-card: |
     ha-card {
       border-radius: 0 !important;
-      border: 2px solid #201e1d !important;
+      border: 2px solid var(--divider-color) !important;
       box-shadow: none !important;
     }
-    /* Section heading cards are rules, not boxes */
     ha-card.type-heading,
     ha-card:has(> hui-heading-card) {
       border: none !important;
-      border-bottom: 2px solid #201e1d !important;
+      border-bottom: 2px solid var(--divider-color) !important;
     }
   card-mod-row: |
-    :host {
-      --mdc-shape-small: 0px;
-    }
+    :host { --mdc-shape-small: 0px; }
   card-mod-more-info: |
     ha-dialog {
       --ha-card-border-radius: 0px;
       --mdc-shape-medium: 0px;
     }
+
+  modes:
+    # ── Light: ink on paper, one red ────────────────────────────────────────
+    light:
+      primary-color: "#ec3013"
+      accent-color: "#ec3013"
+      dark-primary-color: "#ae1800"
+      light-primary-color: "#f8a894"
+
+      primary-background-color: "#f3f2f2"
+      secondary-background-color: "#f3f2f2"
+      card-background-color: "#f3f2f2"
+      ha-card-background: "#f3f2f2"
+      ha-card-border-color: "#201e1d"
+      divider-color: "#201e1d"
+
+      primary-text-color: "#201e1d"
+      secondary-text-color: "#6b6764"
+      text-primary-color: "#ffffff"
+      disabled-text-color: "#a8a3a0"
+
+      app-header-background-color: "#f3f2f2"
+      app-header-text-color: "#201e1d"
+      sidebar-background-color: "#f3f2f2"
+      sidebar-text-color: "#201e1d"
+      sidebar-icon-color: "#6b6764"
+      sidebar-selected-text-color: "#ec3013"
+      sidebar-selected-icon-color: "#ec3013"
+
+      state-icon-color: "#6b6764"
+      state-icon-active-color: "#ec3013"
+      state-light-active-color: "#ec3013"
+      state-fan-active-color: "#ec3013"
+      state-climate-cool-color: "#ec3013"
+      state-climate-heat-color: "#ec3013"
+      state-climate-auto-color: "#ec3013"
+      state-switch-active-color: "#ec3013"
+      state-binary_sensor-active-color: "#ec3013"
+      state-vacuum-active-color: "#ec3013"
+      state-person-home-color: "#ec3013"
+      state-person-not_home-color: "#6b6764"
+      paper-item-icon-color: "#6b6764"
+      paper-item-icon-active-color: "#ec3013"
+
+      slider-color: "#ec3013"
+      slider-bar-color: "#ec3013"
+      slider-track-color: "#d4d1cf"
+      slider-secondary-color: "#d4d1cf"
+      switch-checked-color: "#ec3013"
+      switch-checked-button-color: "#ec3013"
+      switch-unchecked-color: "#6b6764"
+
+    # ── Dark: same system inverted. Red brightened to hold contrast on ink. ─
+    dark:
+      primary-color: "#ff4a2b"
+      accent-color: "#ff4a2b"
+      dark-primary-color: "#ec3013"
+      light-primary-color: "#ff8e78"
+
+      primary-background-color: "#161514"
+      secondary-background-color: "#161514"
+      card-background-color: "#1c1b1a"
+      ha-card-background: "#1c1b1a"
+      ha-card-border-color: "#3a3836"
+      divider-color: "#3a3836"
+
+      primary-text-color: "#f3f2f2"
+      secondary-text-color: "#a39e9a"
+      text-primary-color: "#161514"
+      disabled-text-color: "#6b6764"
+
+      app-header-background-color: "#161514"
+      app-header-text-color: "#f3f2f2"
+      sidebar-background-color: "#161514"
+      sidebar-text-color: "#f3f2f2"
+      sidebar-icon-color: "#a39e9a"
+      sidebar-selected-text-color: "#ff4a2b"
+      sidebar-selected-icon-color: "#ff4a2b"
+
+      state-icon-color: "#a39e9a"
+      state-icon-active-color: "#ff4a2b"
+      state-light-active-color: "#ff4a2b"
+      state-fan-active-color: "#ff4a2b"
+      state-climate-cool-color: "#ff4a2b"
+      state-climate-heat-color: "#ff4a2b"
+      state-climate-auto-color: "#ff4a2b"
+      state-switch-active-color: "#ff4a2b"
+      state-binary_sensor-active-color: "#ff4a2b"
+      state-vacuum-active-color: "#ff4a2b"
+      state-person-home-color: "#ff4a2b"
+      state-person-not_home-color: "#a39e9a"
+      paper-item-icon-color: "#a39e9a"
+      paper-item-icon-active-color: "#ff4a2b"
+
+      slider-color: "#ff4a2b"
+      slider-bar-color: "#ff4a2b"
+      slider-track-color: "#3a3836"
+      slider-secondary-color: "#3a3836"
+      switch-checked-color: "#ff4a2b"
+      switch-checked-button-color: "#ff4a2b"
+      switch-unchecked-color: "#a39e9a"
