@@ -1,0 +1,295 @@
+views:
+- title: Overview
+  path: overview
+  icon: mdi:home
+  cards:
+  - type: markdown
+    content: |-
+      ## {{ 'Good Morning' if now().hour < 12 else ('Good Afternoon' if now().hour < 18 else 'Good Evening') }}
+      {{ state_attr('weather.forecast_home', 'temperature') }}°F · {{ states('weather.forecast_home') | replace('-', ' ') | title }}
+    card_mod:
+      style: 'ha-card { background: {% if is_state(''weather.forecast_home'',''sunny'') %}linear-gradient(135deg,
+        #FDB813, #FF8C42){% elif is_state(''weather.forecast_home'',''clear-night'') %}linear-gradient(135deg,
+        #0f2027, #203a43, #2c5364){% elif is_state(''weather.forecast_home'',''rainy'') or is_state(''weather.forecast_home'',''pouring'')
+        %}linear-gradient(135deg, #485563, #29323c){% elif is_state(''weather.forecast_home'',''snowy'')
+        %}linear-gradient(135deg, #83a4d4, #b6fbff){% elif is_state(''weather.forecast_home'',''partlycloudy'')
+        or is_state(''weather.forecast_home'',''cloudy'') %}linear-gradient(135deg, #757f9a, #d7dde8){%
+        else %}linear-gradient(135deg, rgba(var(--rgb-primary-color), 0.35), rgba(var(--rgb-primary-color),
+        0.05)){% endif %}; border-radius: 20px; border: none; box-shadow: none; padding: 8px 4px; } ha-markdown
+        { text-align: center; } ha-markdown h2 { margin: 4px 0; font-size: 26px; color: white; text-shadow:
+        0 1px 3px rgba(0,0,0,0.3); }'
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Who's Home
+      icon: mdi:home-heart
+      heading_style: title
+    - type: horizontal-stack
+      cards:
+      - type: custom:mushroom-person-card
+        entity: person.vanden
+        display_type: avatar
+        layout: vertical
+      - type: custom:mushroom-entity-card
+        entity: input_boolean.halley
+        name: Halley
+        icon: mdi:account
+        layout: vertical
+    card_mod:
+      style: 'ha-card { background: rgba(var(--rgb-primary-color), 0.04); border: 1px solid rgba(var(--rgb-primary-color),
+        0.08); border-radius: 18px; overflow: hidden; padding-bottom: 8px; }'
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Presence & Occupancy
+      icon: mdi:motion-sensor
+      heading_style: title
+    - type: grid
+      columns: 4
+      square: false
+      cards:
+      - type: custom:mushroom-template-card
+        entity: binary_sensor.upstairs_occupancy_group
+        primary: Upstairs
+        secondary: '{% if is_state(''binary_sensor.upstairs_occupancy_group'', ''on'') %}Occupied for
+          {{ relative_time(states.binary_sensor.upstairs_occupancy_group.last_changed) }}{% else %}Clear{%
+          endif %}'
+        icon: '{{ ''mdi:motion-sensor'' if is_state(''binary_sensor.upstairs_occupancy_group'', ''on'')
+          else ''mdi:motion-sensor-off'' }}'
+        icon_color: '{{ ''green'' if is_state(''binary_sensor.upstairs_occupancy_group'', ''on'') else
+          ''disabled'' }}'
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: binary_sensor.bedroom_occupancy
+        primary: Bedroom
+        secondary: '{% if is_state(''binary_sensor.bedroom_occupancy'', ''on'') %}Occupied for {{ relative_time(states.binary_sensor.bedroom_occupancy.last_changed)
+          }}{% else %}Clear{% endif %}'
+        icon: '{{ ''mdi:motion-sensor'' if is_state(''binary_sensor.bedroom_occupancy'', ''on'') else
+          ''mdi:motion-sensor-off'' }}'
+        icon_color: '{{ ''green'' if is_state(''binary_sensor.bedroom_occupancy'', ''on'') else ''disabled''
+          }}'
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: binary_sensor.upstairs_bathroom_fp2_occupancy
+        primary: Bathroom
+        secondary: '{% if is_state(''binary_sensor.upstairs_bathroom_fp2_occupancy'', ''on'') %}Occupied
+          for {{ relative_time(states.binary_sensor.upstairs_bathroom_fp2_occupancy.last_changed) }}{%
+          else %}Clear{% endif %}'
+        icon: '{{ ''mdi:motion-sensor'' if is_state(''binary_sensor.upstairs_bathroom_fp2_occupancy'',
+          ''on'') else ''mdi:motion-sensor-off'' }}'
+        icon_color: '{{ ''green'' if is_state(''binary_sensor.upstairs_bathroom_fp2_occupancy'', ''on'')
+          else ''disabled'' }}'
+        layout: vertical
+        tap_action:
+          action: more-info
+      - type: custom:mushroom-template-card
+        entity: binary_sensor.downstairs_occupancy_group
+        primary: Downstairs
+        secondary: '{% if is_state(''binary_sensor.downstairs_occupancy_group'', ''on'') %}Occupied for
+          {{ relative_time(states.binary_sensor.downstairs_occupancy_group.last_changed) }}{% else %}Clear{%
+          endif %}'
+        icon: '{{ ''mdi:motion-sensor'' if is_state(''binary_sensor.downstairs_occupancy_group'', ''on'')
+          else ''mdi:motion-sensor-off'' }}'
+        icon_color: '{{ ''green'' if is_state(''binary_sensor.downstairs_occupancy_group'', ''on'') else
+          ''disabled'' }}'
+        layout: vertical
+        tap_action:
+          action: more-info
+    card_mod:
+      style: 'ha-card { background: rgba(var(--rgb-primary-color), 0.04); border: 1px solid rgba(var(--rgb-primary-color),
+        0.08); border-radius: 18px; overflow: hidden; padding-bottom: 8px; }'
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Lights
+      icon: mdi:lightbulb-multiple
+      heading_style: title
+    - type: vertical-stack
+      cards:
+      - type: heading
+        heading: Upstairs
+        icon: mdi:stairs-up
+        heading_style: subtitle
+      - type: grid
+        columns: 4
+        square: false
+        cards:
+        - type: custom:mushroom-light-card
+          entity: light.kitchen_ceiling_lights
+          name: Kitchen
+          layout: vertical
+          show_brightness_control: true
+        - type: custom:mushroom-light-card
+          entity: light.entryway_ceiling_lights
+          name: Entryway
+          layout: vertical
+          show_brightness_control: true
+        - type: custom:mushroom-light-card
+          entity: light.bedroom_3
+          name: Bedroom
+          layout: vertical
+          show_brightness_control: true
+        - type: custom:mushroom-light-card
+          entity: light.upstairs_bathroom
+          name: Bathroom
+          layout: vertical
+          show_brightness_control: true
+      card_mod:
+        style: 'ha-card { background: rgba(var(--rgb-primary-color), 0.04); border: 1px solid rgba(var(--rgb-primary-color),
+          0.08); border-radius: 18px; overflow: hidden; padding-bottom: 8px; }'
+    - type: vertical-stack
+      cards:
+      - type: heading
+        heading: Downstairs
+        icon: mdi:stairs-down
+        heading_style: subtitle
+      - type: grid
+        columns: 4
+        square: false
+        cards:
+        - type: custom:mushroom-light-card
+          entity: light.downstairs
+          name: All Downstairs
+          layout: vertical
+          show_brightness_control: true
+        - type: custom:mushroom-light-card
+          entity: light.living_room
+          name: Living Room
+          layout: vertical
+          show_brightness_control: true
+        - type: custom:mushroom-light-card
+          entity: light.office
+          name: Office
+          layout: vertical
+          show_brightness_control: true
+        - type: custom:mushroom-light-card
+          entity: light.stairs_main_lights_2
+          name: Stairs
+          layout: vertical
+          show_brightness_control: true
+      card_mod:
+        style: 'ha-card { background: rgba(var(--rgb-primary-color), 0.04); border: 1px solid rgba(var(--rgb-primary-color),
+          0.08); border-radius: 18px; overflow: hidden; padding-bottom: 8px; }'
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Fans
+      icon: mdi:fan
+      heading_style: title
+    - type: grid
+      columns: 3
+      square: false
+      cards:
+      - type: custom:mushroom-fan-card
+        entity: fan.living_room_fan
+        name: Living Room
+        layout: vertical
+        show_percentage_control: true
+      - type: custom:mushroom-fan-card
+        entity: fan.office_fan
+        name: Office
+        layout: vertical
+        show_percentage_control: true
+      - type: custom:mushroom-fan-card
+        entity: fan.standing_fan_5c
+        name: Entryway
+        layout: vertical
+        show_percentage_control: true
+      - type: custom:mushroom-fan-card
+        entity: fan.tower_fan
+        name: Office Tower Fan
+        layout: vertical
+        show_percentage_control: true
+      - type: custom:mushroom-fan-card
+        entity: fan.air_circulator
+        name: Bedroom Air Circulator
+        layout: vertical
+        show_percentage_control: true
+      - type: custom:mushroom-fan-card
+        entity: fan.air_circulator_2
+        name: Living Room Air Circulator
+        layout: vertical
+        show_percentage_control: true
+    card_mod:
+      style: 'ha-card { background: rgba(var(--rgb-primary-color), 0.04); border: 1px solid rgba(var(--rgb-primary-color),
+        0.08); border-radius: 18px; overflow: hidden; padding-bottom: 8px; }'
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Climate
+      icon: mdi:thermostat
+      heading_style: title
+    - type: horizontal-stack
+      cards:
+      - type: custom:mushroom-climate-card
+        entity: climate.upstairs
+        name: Upstairs
+        show_temperature_control: true
+      - type: custom:mushroom-climate-card
+        entity: climate.bedroom
+        name: Bedroom
+        show_temperature_control: true
+      - type: custom:mushroom-climate-card
+        entity: climate.downstairs
+        name: Downstairs
+        show_temperature_control: true
+    card_mod:
+      style: 'ha-card { background: rgba(var(--rgb-primary-color), 0.04); border: 1px solid rgba(var(--rgb-primary-color),
+        0.08); border-radius: 18px; overflow: hidden; padding-bottom: 8px; }'
+  - type: vertical-stack
+    cards:
+    - type: heading
+      heading: Vacuums
+      icon: mdi:robot-vacuum-variant
+      heading_style: title
+    - type: horizontal-stack
+      cards:
+      - type: custom:mushroom-template-card
+        entity: vacuum.saros_10r
+        primary: Saros 10R
+        secondary: '{% set last = states(''input_datetime.saros_last_run'') %}{% if last not in [''unknown'',''unavailable'']
+          and as_timestamp(last)|timestamp_custom(''%Y-%m-%d'') == now().strftime(''%Y-%m-%d'') %}✓ Ran
+          today{% else %}✗ Not yet today{% endif %}'
+        icon: mdi:robot-vacuum
+        badge_icon: '{% set last = states(''input_datetime.saros_last_run'') %}{% if last not in [''unknown'',''unavailable'']
+          and as_timestamp(last)|timestamp_custom(''%Y-%m-%d'') == now().strftime(''%Y-%m-%d'') %}mdi:check-circle{%
+          else %}mdi:close-circle{% endif %}'
+        badge_color: '{% set last = states(''input_datetime.saros_last_run'') %}{% if last not in [''unknown'',''unavailable'']
+          and as_timestamp(last)|timestamp_custom(''%Y-%m-%d'') == now().strftime(''%Y-%m-%d'') %}green{%
+          else %}red{% endif %}'
+        tap_action:
+          action: more-info
+        icon_color: '{% set last = states(''input_datetime.saros_last_run'') %}{% if last not in [''unknown'',''unavailable'']
+          and as_timestamp(last)|timestamp_custom(''%Y-%m-%d'') == now().strftime(''%Y-%m-%d'') %}green{%
+          else %}red{% endif %}'
+      - type: custom:mushroom-template-card
+        entity: vacuum.roborock_qrevo_s5v
+        primary: Roborock
+        secondary: '{% set last = states(''input_datetime.roborock_last_run'') %}{% if last not in [''unknown'',''unavailable'']
+          and as_timestamp(last)|timestamp_custom(''%Y-%m-%d'') == now().strftime(''%Y-%m-%d'') %}✓ Ran
+          today{% else %}✗ Not yet today{% endif %}'
+        icon: mdi:robot-vacuum
+        icon_color: '{% set last = states(''input_datetime.roborock_last_run'') %}{% if last not in [''unknown'',''unavailable'']
+          and as_timestamp(last)|timestamp_custom(''%Y-%m-%d'') == now().strftime(''%Y-%m-%d'') %}green{%
+          else %}red{% endif %}'
+        badge_icon: '{% set last = states(''input_datetime.roborock_last_run'') %}{% if last not in [''unknown'',''unavailable'']
+          and as_timestamp(last)|timestamp_custom(''%Y-%m-%d'') == now().strftime(''%Y-%m-%d'') %}mdi:check-circle{%
+          else %}mdi:close-circle{% endif %}'
+        badge_color: '{% set last = states(''input_datetime.roborock_last_run'') %}{% if last not in [''unknown'',''unavailable'']
+          and as_timestamp(last)|timestamp_custom(''%Y-%m-%d'') == now().strftime(''%Y-%m-%d'') %}green{%
+          else %}red{% endif %}'
+        tap_action:
+          action: more-info
+    card_mod:
+      style: 'ha-card { background: rgba(var(--rgb-primary-color), 0.04); border: 1px solid rgba(var(--rgb-primary-color),
+        0.08); border-radius: 18px; overflow: hidden; padding-bottom: 8px; }'
+  badges:
+  - type: entity
+    show_name: false
+    show_state: true
+    show_icon: true
+    entity: sensor.backup_backup_manager_state
