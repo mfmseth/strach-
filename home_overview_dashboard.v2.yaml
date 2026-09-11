@@ -1,0 +1,351 @@
+# Home Overview — v2
+# Sections view. Native cards where native is enough; Mushroom only where it earns its place.
+# Paste into: Dashboard > Edit > Raw configuration editor (storage mode).
+
+views:
+  - title: Home
+    path: home-overview
+    type: sections
+    max_columns: 3
+    dense_section_placement: true
+    icon: mdi:home
+
+    # Status moves to badges: always visible, zero vertical cost.
+    badges:
+      - type: entity
+        entity: person.vanden
+        show_name: true
+        show_state: true
+        color: state
+      - type: entity
+        entity: input_boolean.halley
+        name: Halley
+        icon: mdi:account
+        show_name: true
+        show_state: true
+      - type: entity
+        entity: weather.forecast_home
+        show_name: false
+        show_state: true
+        state_content:
+          - temperature
+          - state
+      - type: entity
+        entity: sensor.backup_backup_manager_state
+        show_name: false
+        show_state: true
+        visibility:
+          - condition: state
+            entity: sensor.backup_backup_manager_state
+            state_not: idle
+
+    sections:
+      # ── Greeting ────────────────────────────────────────────────────────────
+      # Kept, but reduced to one line. The weather gradient stays — it is the
+      # one intentional piece of colour in the dashboard.
+      - type: grid
+        column_span: 3
+        cards:
+          - type: markdown
+            text_only: true
+            content: >-
+              ## {{ 'Good Morning' if now().hour < 12 else ('Good Afternoon' if
+              now().hour < 18 else 'Good Evening') }}
+            card_mod:
+              style: |
+                ha-card {
+                  background: {% if is_state('weather.forecast_home','sunny') %}linear-gradient(100deg, #FDB813, #FF8C42)
+                  {%- elif is_state('weather.forecast_home','clear-night') %}linear-gradient(100deg, #0f2027, #2c5364)
+                  {%- elif is_state('weather.forecast_home','rainy') or is_state('weather.forecast_home','pouring') %}linear-gradient(100deg, #485563, #29323c)
+                  {%- elif is_state('weather.forecast_home','snowy') %}linear-gradient(100deg, #83a4d4, #b6fbff)
+                  {%- elif is_state('weather.forecast_home','partlycloudy') or is_state('weather.forecast_home','cloudy') %}linear-gradient(100deg, #757f9a, #d7dde8)
+                  {%- else %}linear-gradient(100deg, rgba(var(--rgb-primary-color), 0.35), rgba(var(--rgb-primary-color), 0.05))
+                  {%- endif %};
+                  border: none;
+                  box-shadow: none;
+                  padding: 2px 16px;
+                }
+                ha-markdown h2 {
+                  margin: 8px 0;
+                  font-size: 22px;
+                  font-weight: 600;
+                  color: white;
+                  text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+                }
+
+      # ── Occupancy ───────────────────────────────────────────────────────────
+      # Native tile cards replace four Mushroom template cards. `state_content`
+      # gives "Occupied · 12 minutes ago" with no Jinja to maintain.
+      - type: grid
+        column_span: 3
+        cards:
+          - type: heading
+            heading: Occupancy
+            icon: mdi:motion-sensor
+            heading_style: title
+          - type: tile
+            entity: binary_sensor.upstairs_occupancy_group
+            name: Upstairs
+            state_content:
+              - state
+              - last_changed
+            grid_options:
+              columns: 3
+          - type: tile
+            entity: binary_sensor.bedroom_occupancy
+            name: Bedroom
+            state_content:
+              - state
+              - last_changed
+            grid_options:
+              columns: 3
+          - type: tile
+            entity: binary_sensor.upstairs_bathroom_fp2_occupancy
+            name: Bathroom
+            state_content:
+              - state
+              - last_changed
+            grid_options:
+              columns: 3
+          - type: tile
+            entity: binary_sensor.downstairs_occupancy_group
+            name: Downstairs
+            state_content:
+              - state
+              - last_changed
+            grid_options:
+              columns: 3
+
+      # ── Lights ──────────────────────────────────────────────────────────────
+      # Horizontal tiles with an inline brightness slider: one row per light,
+      # name and level readable at a glance, no 4-across icon wall.
+      - type: grid
+        cards:
+          - type: heading
+            heading: Lights
+            icon: mdi:lightbulb-multiple
+            heading_style: title
+            badges:
+              - type: entity
+                entity: light.downstairs
+                show_state: true
+                show_name: false
+          - type: heading
+            heading: Upstairs
+            icon: mdi:stairs-up
+            heading_style: subtitle
+          - type: tile
+            entity: light.kitchen_ceiling_lights
+            name: Kitchen
+            features_position: inline
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.entryway_ceiling_lights
+            name: Entryway
+            features_position: inline
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.bedroom_3
+            name: Bedroom
+            features_position: inline
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.upstairs_bathroom
+            name: Bathroom
+            features_position: inline
+            features:
+              - type: light-brightness
+          - type: heading
+            heading: Downstairs
+            icon: mdi:stairs-down
+            heading_style: subtitle
+          - type: tile
+            entity: light.living_room
+            name: Living Room
+            features_position: inline
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.office
+            name: Office
+            features_position: inline
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.stairs_main_lights_2
+            name: Stairs
+            features_position: inline
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.downstairs
+            name: All Downstairs
+            icon: mdi:lightbulb-group
+            features_position: inline
+            features:
+              - type: light-brightness
+
+      # ── Fans ────────────────────────────────────────────────────────────────
+      # Named by room + type so "Air Circulator" and "Air Circulator 2" stop
+      # being a guessing game. Speed slider inline.
+      - type: grid
+        cards:
+          - type: heading
+            heading: Fans
+            icon: mdi:fan
+            heading_style: title
+          - type: tile
+            entity: fan.living_room_fan
+            name: Living Room — Ceiling
+            features_position: inline
+            features:
+              - type: fan-speed
+          - type: tile
+            entity: fan.air_circulator_2
+            name: Living Room — Circulator
+            features_position: inline
+            features:
+              - type: fan-speed
+          - type: tile
+            entity: fan.office_fan
+            name: Office — Ceiling
+            features_position: inline
+            features:
+              - type: fan-speed
+          - type: tile
+            entity: fan.tower_fan
+            name: Office — Tower
+            features_position: inline
+            features:
+              - type: fan-speed
+          - type: tile
+            entity: fan.air_circulator
+            name: Bedroom — Circulator
+            features_position: inline
+            features:
+              - type: fan-speed
+          - type: tile
+            entity: fan.standing_fan_5c
+            name: Entryway — Standing
+            features_position: inline
+            features:
+              - type: fan-speed
+
+      # ── Climate ─────────────────────────────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: Climate
+            icon: mdi:thermostat
+            heading_style: title
+          - type: tile
+            entity: climate.upstairs
+            name: Upstairs
+            state_content:
+              - state
+              - current_temperature
+            features:
+              - type: target-temperature
+              - type: climate-hvac-modes
+                hvac_modes:
+                  - heat
+                  - cool
+                  - auto
+                  - "off"
+          - type: tile
+            entity: climate.bedroom
+            name: Bedroom
+            state_content:
+              - state
+              - current_temperature
+            features:
+              - type: target-temperature
+              - type: climate-hvac-modes
+                hvac_modes:
+                  - heat
+                  - cool
+                  - auto
+                  - "off"
+          - type: tile
+            entity: climate.downstairs
+            name: Downstairs
+            state_content:
+              - state
+              - current_temperature
+            features:
+              - type: target-temperature
+              - type: climate-hvac-modes
+                hvac_modes:
+                  - heat
+                  - cool
+                  - auto
+                  - "off"
+
+      # ── Chores ──────────────────────────────────────────────────────────────
+      # Mushroom stays here: the "ran today" badge logic has no native
+      # equivalent. Start/return buttons added so the card is actionable.
+      - type: grid
+        cards:
+          - type: heading
+            heading: Chores
+            icon: mdi:robot-vacuum-variant
+            heading_style: title
+          - type: custom:mushroom-template-card
+            entity: vacuum.saros_10r
+            primary: Saros 10R
+            secondary: >-
+              {% set last = states('input_datetime.saros_last_run') %}{% if last
+              not in ['unknown','unavailable'] and
+              as_timestamp(last)|timestamp_custom('%Y-%m-%d') ==
+              now().strftime('%Y-%m-%d') %}Ran today{% else %}Not yet today{%
+              endif %} · {{ states('vacuum.saros_10r') | title }}
+            icon: mdi:robot-vacuum
+            icon_color: >-
+              {% set last = states('input_datetime.saros_last_run') %}{% if last
+              not in ['unknown','unavailable'] and
+              as_timestamp(last)|timestamp_custom('%Y-%m-%d') ==
+              now().strftime('%Y-%m-%d') %}green{% else %}red{% endif %}
+            badge_icon: >-
+              {% set last = states('input_datetime.saros_last_run') %}{% if last
+              not in ['unknown','unavailable'] and
+              as_timestamp(last)|timestamp_custom('%Y-%m-%d') ==
+              now().strftime('%Y-%m-%d') %}mdi:check-circle{% else
+              %}mdi:close-circle{% endif %}
+            badge_color: >-
+              {% set last = states('input_datetime.saros_last_run') %}{% if last
+              not in ['unknown','unavailable'] and
+              as_timestamp(last)|timestamp_custom('%Y-%m-%d') ==
+              now().strftime('%Y-%m-%d') %}green{% else %}red{% endif %}
+            tap_action:
+              action: more-info
+          - type: custom:mushroom-template-card
+            entity: vacuum.roborock_qrevo_s5v
+            primary: Roborock Qrevo
+            secondary: >-
+              {% set last = states('input_datetime.roborock_last_run') %}{% if
+              last not in ['unknown','unavailable'] and
+              as_timestamp(last)|timestamp_custom('%Y-%m-%d') ==
+              now().strftime('%Y-%m-%d') %}Ran today{% else %}Not yet today{%
+              endif %} · {{ states('vacuum.roborock_qrevo_s5v') | title }}
+            icon: mdi:robot-vacuum
+            icon_color: >-
+              {% set last = states('input_datetime.roborock_last_run') %}{% if
+              last not in ['unknown','unavailable'] and
+              as_timestamp(last)|timestamp_custom('%Y-%m-%d') ==
+              now().strftime('%Y-%m-%d') %}green{% else %}red{% endif %}
+            badge_icon: >-
+              {% set last = states('input_datetime.roborock_last_run') %}{% if
+              last not in ['unknown','unavailable'] and
+              as_timestamp(last)|timestamp_custom('%Y-%m-%d') ==
+              now().strftime('%Y-%m-%d') %}mdi:check-circle{% else
+              %}mdi:close-circle{% endif %}
+            badge_color: >-
+              {% set last = states('input_datetime.roborock_last_run') %}{% if
+              last not in ['unknown','unavailable'] and
+              as_timestamp(last)|timestamp_custom('%Y-%m-%d') ==
+              now().strftime('%Y-%m-%d') %}green{% else %}red{% endif %}
+            tap_action:
+              action: more-info
