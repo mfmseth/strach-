@@ -69,8 +69,7 @@ class ModernistHomeCard extends HTMLElement {
 
   connectedCallback() {
     if (this._timer) return;
-    // keeps clock/greeting fresh even when no watched entity changes for a while
-    this._timer = setInterval(() => this._render(), 15000);
+    this._timer = setInterval(() => this._render(), 15000); // keep clock/greeting fresh
   }
 
   disconnectedCallback() {
@@ -121,7 +120,8 @@ class ModernistHomeCard extends HTMLElement {
   }
 
   _call(domain, service, data) {
-    this._hass.callService(domain, service, data);
+    Promise.resolve(this._hass.callService(domain, service, data))
+      .catch((err) => console.error("modernist-home-card:", domain, service, data, err));
   }
 
   _lightPct(entity) {
@@ -152,7 +152,10 @@ class ModernistHomeCard extends HTMLElement {
   }
 
   _onToggle(kind, entity) {
-    this._call(kind, "toggle", { entity_id: entity });
+    // explicit turn_on/turn_off, not the generic "toggle" service
+    const st = this._hass.states[entity];
+    const isOn = st && st.state === "on";
+    this._call(kind, isOn ? "turn_off" : "turn_on", { entity_id: entity });
   }
 
   _onNudge(entity, delta) {
