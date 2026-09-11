@@ -89,10 +89,8 @@ class ModernistHomeCard extends HTMLElement {
     return ids;
   }
 
-  // Signature of only the entities this card uses - re-render only when one of
-  // them actually changes, not on every hass push (Lovelace pushes hass to every
-  // card on any entity change instance-wide; rebuilding on every push raced
-  // in-flight clicks against DOM replacement and silently dropped them).
+  // Only re-render when a watched entity actually changes, not on every hass
+  // push (Lovelace pushes hass to every card on any entity change instance-wide).
   _signature(hass) {
     let sig = "";
     for (const id of this._watched) {
@@ -163,7 +161,8 @@ class ModernistHomeCard extends HTMLElement {
     if (!st) return;
     const min = st.attributes.min_temp ?? 60;
     const max = st.attributes.max_temp ?? 85;
-    const cur = st.attributes.temperature;
+    // temperature is null when hvac_mode is "off" - fall back to current_temperature
+    const cur = st.attributes.temperature ?? st.attributes.current_temperature;
     if (cur == null) return;
     const next = Math.max(min, Math.min(max, cur + delta));
     this._call("climate", "set_temperature", { entity_id: entity, temperature: next });
