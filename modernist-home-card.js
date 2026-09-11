@@ -1,29 +1,12 @@
 /*
- * Modernist Home Card
+ * Modernist Home Card - 1:1 port of the Home Dashboard design study into a
+ * real Lovelace custom card, wired to live entities.
  *
- * A 1:1 port of the "Home Dashboard" design study (Home Dashboard.dc.html) into a
- * real Home Assistant Lovelace custom card. The design study is a bespoke CSS-grid
- * layout with 2px divider rule-lines and hand-built toggle/slider controls - not
- * achievable by styling native tile cards, so this reproduces its exact markup and
- * wires it to live entities instead of the mockup's local component state.
- *
- * Config:
- *   type: custom:modernist-home-card
- *   person: person.vanden
- *   halley: input_boolean.halley
- *   weather: weather.forecast_home
- *   dark_mode_helper: input_boolean.dark_mode
- *   backup_state: sensor.backup_backup_manager_state
- *   backup_last: sensor.backup_last_successful_automatic_backup
- *   occupancy: [{entity, name}, ...]
- *   lights_up: [{entity, name}, ...]
- *   lights_down: [{entity, name}, ...]
- *   fans: [{entity, name, room}, ...]
- *   climate: [{entity, name}, ...]
+ * Config: type: custom:modernist-home-card
+ *   person, halley, weather, dark_mode_helper, backup_state, backup_last: entity ids
+ *   occupancy/lights_up/lights_down/fans/climate: [{entity, name, room?}, ...]
  *   vacuums: [{entity, name, room, last_run_helper}, ...]
  */
-
-const SPACE = { 1: "4px", 2: "8px", 3: "12px", 4: "16px", 6: "24px", 8: "32px" };
 
 const PALETTE = {
   light: { bg: "#f3f2f2", surface: "#f3f2f2", text: "#201e1d", muted: "#6b6764", divider: "#201e1d", track: "#d4d1cf", onAccent: "#ffffff", knob: "#f3f2f2", accent: "#ec3013" },
@@ -76,13 +59,60 @@ class ModernistHomeCard extends HTMLElement {
   setConfig(config) {
     if (!config) throw new Error("modernist-home-card: config required");
     this._config = config;
-    this._dark = null; // resolved from dark_mode_helper on first hass update
-    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
-    this._built = false;
+    this._watched = this._watchedEntityIds(config);
+    this._lastSig = null;
+    if (!this.shadowRoot) {
+      this.attachShadow({ mode: "open" });
+      this._wireDelegatedEvents(); // attached once to the stable shadow root, survives re-renders
+    }
+  }
+
+  connectedCallback() {
+    if (this._timer) return;
+    // keeps clock/greeting fresh even when no watched entity changes for a while
+    this._timer = setInterval(() => this._render(), 15000);
+  }
+
+  disconnectedCallback() {
+    clearInterval(this._timer);
+    this._timer = null;
+  }
+
+  _watchedEntityIds(cfg) {
+    const ids = [cfg.person, cfg.halley, cfg.weather, cfg.dark_mode_helper, cfg.backup_state, cfg.backup_last]
+      .filter(Boolean);
+    for (const group of [cfg.occupancy, cfg.lights_up, cfg.lights_down, cfg.fans, cfg.climate, cfg.vacuums]) {
+      for (const item of group || []) {
+        if (item.entity) ids.push(item.entity);
+        if (item.last_run_helper) ids.push(item.last_run_helper);
+      }
+    }
+    return ids;
+  }
+
+  // Signature of only the entities this card uses - re-render only when one of
+  // them actually changes, not on every hass push (Lovelace pushes hass to every
+  // card on any entity change instance-wide; rebuilding on every push raced
+  // in-flight clicks against DOM replacement and silently dropped them).
+  _signature(hass) {
+    let sig = "";
+    for (const id of this._watched) {
+      const s = hass.states[id];
+      sig += s ? `${id}:${s.state}:${s.last_updated};` : `${id}:_;`;
+    }
+    // also count unavailable entities so System stays live
+    let unavailable = 0;
+    for (const eid in hass.states) if (hass.states[eid].state === "unavailable") unavailable++;
+    sig += `#unavail:${unavailable}`;
+    return sig;
   }
 
   set hass(hass) {
     this._hass = hass;
+    if (!this._config) return;
+    const sig = this._signature(hass);
+    if (sig === this._lastSig) return; // nothing this card shows has changed
+    this._lastSig = sig;
     this._render();
   }
 
@@ -108,9 +138,9 @@ class ModernistHomeCard extends HTMLElement {
     return p == null ? 100 : Math.round(p);
   }
 
-  _onSetFromClick(e, kind, entity) {
-    const track = e.currentTarget;
-    const rect = track.getBoundingClientRect();
+  _onSetFromClick(e, kind, entity, sliderEl) {
+    // sliderEl (not e.currentTarget, which under delegation is the shadow root)
+    const rect = sliderEl.getBoundingClientRect();
     const pct = Math.max(0, Math.min(100, Math.round(((e.clientX - rect.left) / rect.width) * 100)));
     if (kind === "light") {
       if (pct <= 0) this._call("light", "turn_off", { entity_id: entity });
@@ -408,33 +438,39 @@ class ModernistHomeCard extends HTMLElement {
         </div>
       </div>
     `;
-
-    this._wireEvents();
   }
 
-  _wireEvents() {
-    const root = this.shadowRoot;
-    root.querySelectorAll("[data-toggle]").forEach((el) => {
-      const [kind, entity] = el.getAttribute("data-toggle").split(":");
-      el.addEventListener("click", () => this._onToggle(kind, entity));
-    });
-    root.querySelectorAll("[data-slider]").forEach((el) => {
-      const [kind, entity] = el.getAttribute("data-slider").split(":");
-      el.addEventListener("click", (e) => this._onSetFromClick(e, kind, entity));
-    });
-    root.querySelectorAll("[data-nudge]").forEach((el) => {
-      const [entity, delta] = el.getAttribute("data-nudge").split(":");
-      el.addEventListener("click", () => this._onNudge(entity, Number(delta)));
-    });
-    root.querySelectorAll("[data-all-off]").forEach((el) => {
-      const kind = el.getAttribute("data-all-off");
-      el.addEventListener("click", () => {
+  // Attached ONCE to the shadow root (survives every _render(), which only
+  // replaces its children) - avoids rebinding-per-render races entirely.
+  _wireDelegatedEvents() {
+    this.shadowRoot.addEventListener("click", (e) => {
+      const toggleEl = e.target.closest("[data-toggle]");
+      if (toggleEl) {
+        const [kind, entity] = toggleEl.getAttribute("data-toggle").split(":");
+        this._onToggle(kind, entity);
+        return;
+      }
+      const sliderEl = e.target.closest("[data-slider]");
+      if (sliderEl) {
+        const [kind, entity] = sliderEl.getAttribute("data-slider").split(":");
+        this._onSetFromClick(e, kind, entity, sliderEl);
+        return;
+      }
+      const nudgeEl = e.target.closest("[data-nudge]");
+      if (nudgeEl) {
+        const [entity, delta] = nudgeEl.getAttribute("data-nudge").split(":");
+        this._onNudge(entity, Number(delta));
+        return;
+      }
+      const allOffEl = e.target.closest("[data-all-off]");
+      if (allOffEl) {
+        const kind = allOffEl.getAttribute("data-all-off");
         const list = kind === "light" ? [...(this._config.lights_up || []), ...(this._config.lights_down || [])] : (this._config.fans || []);
         list.forEach((item) => this._call(kind, "turn_off", { entity_id: item.entity }));
-      });
+        return;
+      }
+      if (e.target.closest("[data-toggle-dark]")) this._onToggleDarkMode();
     });
-    const darkBtn = root.querySelector("[data-toggle-dark]");
-    if (darkBtn) darkBtn.addEventListener("click", () => this._onToggleDarkMode());
   }
 }
 
